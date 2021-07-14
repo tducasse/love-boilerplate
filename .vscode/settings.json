@@ -1,0 +1,8 @@
+{
+  "editor.formatOnSave": true,
+  "Lua.diagnostics.globals": [
+    "love"
+  ],
+  "vscode-lua-format.configPath": "lua-format.yaml",
+  "Lua.runtime.version": "LuaJIT"
+}
