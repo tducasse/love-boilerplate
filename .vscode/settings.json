@@ -4,5 +4,9 @@
     "love"
   ],
   "vscode-lua-format.configPath": "lua-format.yaml",
-  "Lua.runtime.version": "LuaJIT"
+  "Lua.runtime.version": "LuaJIT",
+  "files.associations": {
+    "*.ldtk": "json",
+    "*.ldtkl": "json"
+  }
 }
