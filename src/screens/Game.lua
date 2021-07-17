@@ -70,7 +70,6 @@ function GameScreen.new()
   end
 
   function self:update(dt)
-    require("lib.lurker").update()
     Input:update()
     if Input:pressed("cancel") then
       love.audio.stop(music)
