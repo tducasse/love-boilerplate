@@ -30,8 +30,8 @@ function GameScreen.new()
     world = {}
     map = {}
     paused = false
-    music = {}
     music = love.audio.play("assets/music.ogg", "stream", true)
+
     -- MAP
     map = Ldtk("assets/boilerplate.ldtk", { aseprite = true })
     world = bump.newWorld()
