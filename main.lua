@@ -1,4 +1,5 @@
 require("src.globals")
+require("lib.audio")
 
 local inspect = require("lib.inspect")
 Inspect = function(a)
@@ -13,21 +14,6 @@ local Camera = require("lib.camera")
 local bump = require("lib.bump")
 
 local Player = require("src.entities.player")
-
--- DRAW BOXES
-local Object = Class:extend()
-function Object:new(e)
-  self.x = e.x
-  self.y = e.y
-  self.w = e.width
-  self.h = e.height
-  self.visible = e.visible
-end
-function Object:draw()
-  if self.visible then
-    love.graphics.rectangle("line", self.x, self.y, self.w, self.h)
-  end
-end
 
 -- WINDOW
 local res_x = 512
@@ -52,6 +38,7 @@ local paused = false
 
 -- GAME
 function love.load()
+  love.audio.play("assets/music.ogg", "stream", true)
   -- MAP
   map = Ldtk("assets/boilerplate.ldtk", { aseprite = true })
   world = bump.newWorld()
@@ -62,12 +49,6 @@ function love.load()
   player = Player(
                map.active.Entities.Player, map.active.width, map.active.height)
   world:add(player, player.x, player.y, player.w, player.h)
-
-  -- STATE UPDATE
-  local function onLevelLoaded()
-    player:onLevelLoaded()
-    paused = false
-  end
 
   -- SIGNALS
   Signal.register(
@@ -86,7 +67,7 @@ function love.load()
         camera:fade(
             0.1, { 0, 0, 0, 0 }, function()
               paused = false
-              onLevelLoaded()
+              player:onLevelLoaded()
             end)
       end)
 end
@@ -97,6 +78,7 @@ end
 
 function love.update(dt)
   require("lib.lurker").update()
+  love.audio.update()
   if not paused then
     player:update(dt, world)
   end

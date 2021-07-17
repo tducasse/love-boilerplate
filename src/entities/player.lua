@@ -49,6 +49,7 @@ function Player:update(dt, world)
 
   if love.keyboard.isDown("space") or love.keyboard.isDown("z") then
     if self.ground and not self.jumping then
+      love.audio.play("assets/jump.ogg", "static")
       self.jumping = true
       self.dy = self.jumpSpeed
     end
