@@ -1,8 +1,11 @@
+require("src.globals")
+
 local inspect = require("lib.inspect")
 Inspect = function(a)
   print(inspect(a))
 end
 Class = require("lib.classic")
+Signal = require("lib.signal")
 
 local push = require("lib.push")
 local Ldtk = require("lib.ldtk")
@@ -27,15 +30,15 @@ function Object:draw()
 end
 
 -- WINDOW
-local res_x = 256
-local res_y = 256
+local res_x = 512
+local res_y = 288
 local window_x = 1024
 local window_y = window_x / (res_x / res_y)
 love.graphics.setDefaultFilter("nearest", "nearest")
 love.graphics.setLineStyle("rough")
 push:setupScreen(
     res_x, res_y, window_x, window_y,
-    { fullscreen = false, resizable = true, vsync = true })
+    { fullscreen = false, resizable = true, vsync = true, pixelperfect = true })
 
 -- CAMERA
 local camera = Camera(res_x / 2, res_y / 2, res_x, res_y)
@@ -45,22 +48,47 @@ camera:setFollowStyle("PLATFORMER")
 local player = {}
 local world = {}
 local map = {}
+local paused = false
 
 -- GAME
 function love.load()
-  map = Ldtk("map/boilerplate.ldtk")
-  map:loadLevel("Level_0")
-  player = Player(map.active.Entities.Player)
+  -- MAP
+  map = Ldtk("assets/boilerplate.ldtk", { aseprite = true })
   world = bump.newWorld()
-  map:addWorld(world)
-  map:addCollisions()
-  world:add(player, player.x, player.y, player.w, player.h)
-end
+  map:loadLevel("Level_0", world)
+  camera:setBounds(0, 0, map.active.width, map.active.height)
 
-function love.keypressed(key)
-  if key == "escape" then
-    love.event.quit()
+  -- PLAYER
+  player = Player(
+               map.active.Entities.Player, map.active.width, map.active.height)
+  world:add(player, player.x, player.y, player.w, player.h)
+
+  -- STATE UPDATE
+  local function onLevelLoaded()
+    player:onLevelLoaded()
+    paused = false
   end
+
+  -- SIGNALS
+  Signal.register(
+      SIGNALS.NEXT_LEVEL, function(params)
+        paused = true
+        camera:fade(
+            0.1, { 0, 0, 0, 1 }, function()
+              map:nextLevel(
+                  params, function()
+                  end)
+              Signal.emit(SIGNALS.LEVEL_LOADED)
+            end)
+      end)
+  Signal.register(
+      SIGNALS.LEVEL_LOADED, function()
+        camera:fade(
+            0.1, { 0, 0, 0, 0 }, function()
+              paused = false
+              onLevelLoaded()
+            end)
+      end)
 end
 
 function love.resize(w, h)
@@ -69,9 +97,17 @@ end
 
 function love.update(dt)
   require("lib.lurker").update()
-  player:move(dt, world)
+  if not paused then
+    player:move(dt, world)
+  end
   camera:follow(player.x, player.y)
-  camera:update()
+  camera:update(dt)
+end
+
+function love.keypressed(key)
+  if key == "escape" then
+    love.event.quit()
+  end
 end
 
 function love.draw()
@@ -80,8 +116,17 @@ function love.draw()
 
   love.graphics.clear(40 / 255, 45 / 255, 52 / 255, 255 / 255)
   map:draw()
-  player:draw()
+  if not paused then
+    player:draw()
+  end
+
+  -- local items = world:getItems()
+  -- for i = 1, #items do
+  --   local item = items[i]
+  --   love.graphics.rectangle("line", item.x, item.y, item.w, item.h)
+  -- end
 
   camera:detach()
+  camera:draw()
   push:finish()
 end

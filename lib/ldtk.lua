@@ -32,7 +32,7 @@ function IntGrid:new(tiles, name, size)
 end
 
 local AutoLayer = Layer:extend()
-function AutoLayer:new(tiles, name, tileset, size)
+function AutoLayer:new(tiles, name, tileset, size, spacing, padding)
   AutoLayer.super.new(self, tiles, name)
   self.type = "auto"
   self.tileset = love.graphics.newImage(tileset)
@@ -46,8 +46,10 @@ function AutoLayer:new(tiles, name, tileset, size)
   end
   local quads = {}
   for k, info in pairs(quadInfo) do
+    local offX = math.floor(info[1] / size) * (padding + spacing) + padding
+    local offY = math.floor(info[2] / size) * (padding + spacing) + padding
     quads[k] = love.graphics.newQuad(
-                   info[1], info[2], size, size, self.tileset:getWidth(),
+                   offX, offY, size, size, self.tileset:getWidth(),
                    self.tileset:getHeight())
   end
   self.quads = quads
@@ -55,7 +57,6 @@ end
 
 local function getIntGrid(layer)
   local width = layer.__cWid
-  local size = layer.__gridSize
   local grid = layer.intGridCsv
   local tiles = {}
   local size = layer.__gridSize
@@ -75,10 +76,15 @@ local function getIntGrid(layer)
   return IntGrid(tiles, layer.__identifier, size)
 end
 
-local function getAutoLayer(layer, root)
+local function getAutoLayer(layer, root, options, tilesets)
+  local tilesetPath = root .. layer.__tilesetRelPath
+  local tileset = tilesets[layer.__tilesetDefUid]
+  if options and options.aseprite then
+    tilesetPath = tilesetPath:gsub("aseprite", "png")
+  end
   return AutoLayer(
-             layer.autoLayerTiles, layer.__identifier,
-             root .. layer.__tilesetRelPath, layer.__gridSize)
+             layer.autoLayerTiles, layer.__identifier, tilesetPath,
+             layer.__gridSize, tileset.spacing, tileset.padding)
 end
 
 local function getEntities(layer)
@@ -86,9 +92,17 @@ local function getEntities(layer)
   local entities = {}
   for i = 1, #instances do
     local entity = instances[i]
+    local _fields = entity.fieldInstances
+    local fields = {}
+    for j = 1, #_fields do
+      local field = _fields[j]
+      fields[field.__identifier] = field.__value
+    end
     entities[entity.__identifier] = {
       x = entity.px[1],
       y = entity.px[2],
+      top = fields.top,
+      left = fields.left,
       w = entity.width,
       h = entity.height,
     }
@@ -103,49 +117,76 @@ local layerTypes = {
   Entities = getEntities,
 }
 
-local function getLayer(_layer, root)
+local function getLayer(_layer, root, options, tilesets)
   local layer = {}
   local getLayerByType = layerTypes[_layer.__type]
   if getLayerByType then
-    layer = getLayerByType(_layer, root)
+    layer = getLayerByType(_layer, root, options, tilesets)
   else
     layer.name = _layer.__identifier
   end
   return layer
 end
 
-local function getLayers(_layers, root)
+local function getLayers(_layers, root, options, tilesets)
   local layers = {}
   for i = 1, #_layers do
     local _layer = _layers[i]
-    local layer = getLayer(_layer, root)
+    local layer = getLayer(_layer, root, options, tilesets)
     layers[layer.name] = layer
   end
   return layers
 end
 
-local function getLevel(_level, root)
-  local level = getLayers(_level.layerInstances, root)
+local function getNeighbours(level, levelsByUid)
+  local _neighbours = level.__neighbours
+  local neighbours = {}
+  for i = 1, #_neighbours do
+    local neighbour = _neighbours[i]
+    neighbours[neighbour.dir] = levelsByUid[neighbour.levelUid]
+  end
+  return neighbours
+end
+
+local function getLevel(_level, root, options, tilesets, levelsByUid)
+  local level = getLayers(_level.layerInstances, root, options, tilesets)
   level.name = _level.identifier
+  level.width = _level.pxWid
+  level.height = _level.pxHei
+  level.next = getNeighbours(_level, levelsByUid)
   return level
 end
 
-local function getLevels(_levels, root)
+local function getLevels(_levels, root, options, tilesets, levelsByUid)
   local levels = {}
   for i = 1, #_levels do
     local _level = _levels[i]
-    local level = getLevel(_level, root)
+    local level = getLevel(_level, root, options, tilesets, levelsByUid)
     levels[level.name] = level
   end
   return levels
 end
 
-function Ldtk:new(path)
+function Ldtk:new(path, options)
   local root = path:gsub("[^/]+.ldtk", "")
   local data = love.filesystem.read(path)
   local raw = json.decode(data)
   local _levels = raw.levels
-  local levels = getLevels(_levels, root)
+  local _tilesets = raw.defs.tilesets
+  local tilesets = {}
+  for i = 1, #_tilesets do
+    local tileset = _tilesets[i]
+    tilesets[tileset.uid] = {
+      padding = tileset.padding,
+      spacing = tileset.spacing,
+    }
+  end
+  local levelsByUid = {}
+  for i = 1, #_levels do
+    local level = _levels[i]
+    levelsByUid[level.uid] = level.identifier
+  end
+  local levels = getLevels(_levels, root, options, tilesets, levelsByUid)
   self.levels = levels
 end
 
@@ -167,8 +208,22 @@ function Ldtk:addCollisions()
   end
 end
 
-function Ldtk:addWorld(world)
-  self.world = world
+function IntGrid:removeCollisions(world)
+  local tiles = self.tiles
+  for i = 1, #tiles do
+    local tile = tiles[i]
+    world:remove(tile)
+  end
+end
+
+function Ldtk:removeCollisions()
+  local layers = self.active
+  for _, layer in pairs(layers) do
+    local meta = getmetatable(layer)
+    if meta and meta.addCollisions then
+      layer:removeCollisions(self.world)
+    end
+  end
 end
 
 function AutoLayer:draw()
@@ -179,13 +234,27 @@ function AutoLayer:draw()
   end
 end
 
-function Ldtk:loadLevel(name)
+function Ldtk:loadLevel(name, world)
+  if not self.world and world then
+    self.world = world
+  end
   if not self.levels[name] then
-    print("Could not find the level " .. name)
     return false
   end
   self.current = name
+  if self.active then
+    self:removeCollisions()
+  end
   self.active = self.levels[self.current]
+  self:addCollisions()
+end
+
+function Ldtk:nextLevel(dir)
+  local nextLevel = self.active.next[dir]
+  if not nextLevel then
+    return false
+  end
+  self:loadLevel(self.active.next[dir])
 end
 
 function Ldtk:draw()
