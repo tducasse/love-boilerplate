@@ -98,7 +98,7 @@ end
 function love.update(dt)
   require("lib.lurker").update()
   if not paused then
-    player:move(dt, world)
+    player:update(dt, world)
   end
   camera:follow(player.x, player.y)
   camera:update(dt)
