@@ -36,51 +36,50 @@ function Player:update(dt, world)
     self.world = world
   end
 
-  local dx = 0
-  local x = Input:get("move")
-  if x > 0 then
+  local x, y = self.x, self.y
+  local x_axis = Input:get("move")
+
+  if x_axis > 0 then
+    x = self.x + (self.speed * dt)
     self.sprite:setTag("Right")
-    dx = self.speed * dt
     self.last_dir = self.sprite.tagName
-  elseif x < 0 then
+  elseif x_axis < 0 then
+    x = self.x - (self.speed * dt)
     self.sprite:setTag("Left")
-    dx = -self.speed * dt
     self.last_dir = self.sprite.tagName
   end
 
-  if Input:pressed "jump" then
+  if Input:down("jump") then
     if self.ground and not self.jumping then
       love.audio.play("assets/jump.ogg", "static")
       self.jumping = true
-      self.dy = self.jumpSpeed
+      self.y_velocity = self.jump_height
     end
-  else
+  end
+
+  if Input:released("jump") then
     self.jumping = false
   end
 
-  self.dy = math.max(
-                -self.maxVertSpeed,
-                math.min(self.dy + self.gravity * dt, self.maxVertSpeed))
+  y = self.y + self.y_velocity * dt + 0.000001
+  self.y_velocity = self.y_velocity + self.gravity * dt
 
   local cols
-  self.x, self.y, cols = world:move(self, self.x + dx, self.y + self.dy)
+  self.x, self.y, cols = self.world:move(self, x, y)
 
-  local grounded = false
+  local ground = false
   for _, col in pairs(cols) do
-    if col.normal.y == -1 then
-      grounded = true
-      self.ground = true
-    elseif col.normal.y == 1 then
-      self.dy = 0
+    if col.normal.y == 1 then
+      self.y_velocity = 0
+    elseif col.normal.y == -1 then
+      ground = true
+      self.y_velocity = 0
     end
   end
 
-  if not grounded then
-    self.sprite:setTag("Jump")
-    self.ground = false
-  else
-    self.sprite:setTag(self.last_dir)
-  end
+  self.ground = ground
+
+  self.sprite:setTag(self.ground and self.last_dir or "Jump")
 
   self:moveOutOfBounds()
 end
@@ -90,28 +89,33 @@ function Player:onLevelLoaded()
 end
 
 function Player:new(p, map_width, map_height)
+  -- POSITION
   self.x = p.x
   self.y = p.y
   self.top = p.top
   self.left = p.left
   self.w = p.w
   self.h = p.h
-  self.gravity = 10
-  self.speed = 250
-  self.jumpSpeed = -5
+
+  -- PHYSICS
+  self.speed = 200
   self.ground = false
+  self.jump_height = -255
+  self.gravity = 500
   self.jumping = false
-  self.maxVertSpeed = 5
-  self.dy = self.maxVertSpeed
+  self.y_velocity = 0
+
+  -- LEVEL BOUNDARIES
   self.east = map_width
   self.south = map_height
   self.north = 0
   self.west = 0
+
+  -- DRAWING
   self.sprite = peachy.new(
                     "assets/player.json",
                     love.graphics.newImage("assets/player.png"), "Right")
   self.last_dir = self.sprite.tagName
-
   self.sprite:play()
 end
 
