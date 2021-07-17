@@ -37,17 +37,18 @@ function Player:update(dt, world)
   end
 
   local dx = 0
-  if love.keyboard.isDown("right") or love.keyboard.isDown("d") then
+  local x = Input:get("move")
+  if x > 0 then
     self.sprite:setTag("Right")
     dx = self.speed * dt
     self.last_dir = self.sprite.tagName
-  elseif love.keyboard.isDown("left") or love.keyboard.isDown("a") then
+  elseif x < 0 then
     self.sprite:setTag("Left")
     dx = -self.speed * dt
     self.last_dir = self.sprite.tagName
   end
 
-  if love.keyboard.isDown("space") or love.keyboard.isDown("z") then
+  if Input:pressed "jump" then
     if self.ground and not self.jumping then
       love.audio.play("assets/jump.ogg", "static")
       self.jumping = true

@@ -12,8 +12,22 @@ local push = require("lib.push")
 local Ldtk = require("lib.ldtk")
 local Camera = require("lib.camera")
 local bump = require("lib.bump")
+local baton = require("lib.baton")
 
 local Player = require("src.entities.player")
+
+-- INPUT
+
+Input = baton.new {
+  controls = {
+    left = { "key:left", "key:a" },
+    right = { "key:right", "key:d" },
+    up = {},
+    down = {},
+    jump = { "key:space", "key:x" },
+  },
+  pairs = { move = { "left", "right", "up", "down" } },
+}
 
 -- WINDOW
 local res_x = 512
@@ -78,6 +92,7 @@ end
 
 function love.update(dt)
   require("lib.lurker").update()
+  Input:update()
   love.audio.update()
   if not paused then
     player:update(dt, world)
