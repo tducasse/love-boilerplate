@@ -10,7 +10,7 @@ function SplashScreen.new()
   function self:update()
     Input:update()
     if Input:pressed("jump") then
-      ScreenManager.switch("game")
+      ScreenManager.switch("intro")
     end
     if Input:pressed("cancel") then
       love.event.quit()

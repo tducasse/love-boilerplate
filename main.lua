@@ -17,8 +17,8 @@ function love.load()
     controls = {
       left = { "key:left", "key:a" },
       right = { "key:right", "key:d" },
-      up = {},
-      down = {},
+      up = { "key:up", "key:w" },
+      down = { "key:down", "key:s" },
       jump = { "key:space", "key:x" },
       cancel = { "key:escape" },
     },
@@ -40,6 +40,7 @@ function love.load()
   local screens = {
     game = require("src.screens.Game"),
     splash = require("src.screens.SplashScreen"),
+    intro = require("src.screens.Intro"),
   }
   ScreenManager.init(screens, "splash")
   ScreenManager.registerCallbacks()
