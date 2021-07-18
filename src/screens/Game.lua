@@ -65,10 +65,6 @@ function GameScreen.new()
         end)
   end
 
-  function self:resize(w, h)
-    return push:resize(w, h)
-  end
-
   function self:update(dt)
     Input:update()
     if Input:pressed("cancel") then

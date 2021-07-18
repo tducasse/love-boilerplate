@@ -45,3 +45,7 @@ function love.load()
   ScreenManager.init(screens, "splash")
   ScreenManager.registerCallbacks()
 end
+
+function love.resize(w, h)
+  return push:resize(w, h)
+end
