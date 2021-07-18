@@ -115,8 +115,8 @@
 			"identifier": "Player",
 			"uid": 8,
 			"tags": [],
-			"width": 16,
-			"height": 24,
+			"width": 20,
+			"height": 30,
 			"resizableX": false,
 			"resizableY": false,
 			"keepAspectRatio": false,
@@ -152,7 +152,7 @@
 					"max": null,
 					"regex": null,
 					"acceptFileTypes": null,
-					"defaultOverride": { "id": "V_Int", "params": [8] },
+					"defaultOverride": { "id": "V_Int", "params": [2] },
 					"textLanguageMode": null
 				},
 				{
@@ -172,7 +172,7 @@
 					"max": null,
 					"regex": null,
 					"acceptFileTypes": null,
-					"defaultOverride": { "id": "V_Int", "params": [8] },
+					"defaultOverride": { "id": "V_Int", "params": [6] },
 					"textLanguageMode": null
 				}
 			]
@@ -199,13 +199,13 @@
 			}
 		},
 		{
-			"__cWid": 1,
-			"__cHei": 1,
+			"__cWid": 4,
+			"__cHei": 4,
 			"identifier": "Player",
 			"uid": 9,
 			"relPath": "player.aseprite",
-			"pxWid": 32,
-			"pxHei": 32,
+			"pxWid": 128,
+			"pxHei": 128,
 			"tileGridSize": 32,
 			"spacing": 0,
 			"padding": 0,
@@ -213,7 +213,7 @@
 			"enumTags": [],
 			"customData": [],
 			"savedSelections": [],
-			"cachedPixelData": { "opaqueTiles": "0", "averageColors": "518c" }
+			"cachedPixelData": { "opaqueTiles": "0000000000000000", "averageColors": "8986898689868986898689868976897689868986898689868986898689868986" }
 		}
 	], "enums": [], "externalEnums": [], "levelFields": [] },
 	"levels": [
@@ -260,16 +260,16 @@
 					"entityInstances": [
 						{
 							"__identifier": "Player",
-							"__grid": [2,13],
+							"__grid": [2,12],
 							"__pivot": [0,0],
 							"__tile": { "tilesetUid": 9, "srcRect": [0,0,32,32] },
-							"width": 16,
-							"height": 24,
+							"width": 20,
+							"height": 30,
 							"defUid": 8,
-							"px": [16,104],
+							"px": [16,96],
 							"fieldInstances": [
-								{ "__identifier": "top", "__value": 8, "__type": "Int", "defUid": 14, "realEditorValues": [] },
-								{ "__identifier": "left", "__value": 8, "__type": "Int", "defUid": 15, "realEditorValues": [] }
+								{ "__identifier": "top", "__value": 2, "__type": "Int", "defUid": 14, "realEditorValues": [] },
+								{ "__identifier": "left", "__value": 6, "__type": "Int", "defUid": 15, "realEditorValues": [] }
 							]
 						}
 					]

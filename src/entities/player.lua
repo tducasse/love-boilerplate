@@ -2,7 +2,12 @@ local peachy = require("lib.peachy")
 local Player = Class:extend()
 
 function Player:draw()
-  self.sprite:draw(self.x - self.left, self.y - self.top)
+  local x = self.x - self.left
+  local y = self.y - self.top
+  if self.last_dir == -1 then
+    x = x + self.w + self.left * 2
+  end
+  self.sprite:draw(x, y, 0, self.last_dir)
 end
 
 function Player:moveOutOfBounds()
@@ -41,12 +46,20 @@ function Player:update(dt, world)
 
   if x_axis > 0 then
     x = self.x + (self.speed * dt)
-    self.sprite:setTag("Right")
-    self.last_dir = self.sprite.tagName
+    if self.ground then
+      self.sprite:setTag("run")
+    end
+    self.last_dir = 1
   elseif x_axis < 0 then
     x = self.x - (self.speed * dt)
-    self.sprite:setTag("Left")
-    self.last_dir = self.sprite.tagName
+    if self.ground then
+      self.sprite:setTag("run")
+    end
+    self.last_dir = -1
+  else
+    if self.ground then
+      self.sprite:setTag("idle")
+    end
   end
 
   if Input:down("jump") then
@@ -79,7 +92,9 @@ function Player:update(dt, world)
 
   self.ground = ground
 
-  self.sprite:setTag(self.ground and self.last_dir or "Jump")
+  if not self.ground then
+    self.sprite:setTag("jump")
+  end
 
   self:moveOutOfBounds()
 end
@@ -114,8 +129,8 @@ function Player:new(p, map_width, map_height)
   -- DRAWING
   self.sprite = peachy.new(
                     "assets/player.json",
-                    love.graphics.newImage("assets/player.png"), "Right")
-  self.last_dir = self.sprite.tagName
+                    love.graphics.newImage("assets/player.png"), "idle")
+  self.last_dir = 1
   self.sprite:play()
 end
 
