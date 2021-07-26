@@ -11,4 +11,4 @@ A simple platformer boilerplate, designed to make Love2d development easier.
 - automated Aseprite animation import with [peachy](https://github.com/josh-perry/peachy)
 - fancy camera effects with [STALKER-X](https://github.com/a327ex/STALKER-X)
 - a complete dialog system, with [erogodic](https://github.com/oniietzschan/erogodic) and [talkies](https://github.com/tanema/talkies)
-- tilemap parsing and collisions with [tilemapper](https://github.com/tducasse/tilemapper), [json.lua](https://github.com/rxi/json.lua), and [bump.lua](https://github.com/kikito/bump.lua)
+- [LDtk](https://ldtk.io/) tilemap parsing and collisions with [tilemapper](https://github.com/tducasse/tilemapper), [json.lua](https://github.com/rxi/json.lua), and [bump.lua](https://github.com/kikito/bump.lua)
