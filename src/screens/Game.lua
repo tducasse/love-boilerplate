@@ -6,7 +6,7 @@ local GameScreen = {}
 function GameScreen.new()
   local self = Screen.new()
 
-  local Ldtk = require("lib.ldtk")
+  local Ldtk = require("lib.tilemapper")
   local Camera = require("lib.camera")
   local bump = require("lib.bump")
   local push = require("lib.push")

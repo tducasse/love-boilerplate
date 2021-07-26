@@ -1,20 +1,5 @@
+-- tilemapper v0.0.1
 local json = require("lib.json")
-
--- params: a path + a bump world
-
--- get json
--- parse with decode
--- get all layers
--- for each layer, based on type, call parseType
--- return {
---   entities: put entities in a struct so that we can do struct.Player
---   collision: if layer called collision or layer custom data collision, get intGridCsv
---   from intGridCsv, get the coordinates
---   create the collisions, add them to the world
---   tiles: if tiles/autotiles/gridTiles, put in a consolidated list
---   quads: create all the quads from a tileset
---   draw: draw all tiles, based on quads and tiles list 
--- }
 
 local Ldtk = Class:extend()
 
