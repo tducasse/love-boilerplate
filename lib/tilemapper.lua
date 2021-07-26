@@ -1,7 +1,7 @@
 -- tilemapper v0.0.1
 local json = require("lib.json")
 
-local Ldtk = Class:extend()
+local Tilemapper = Class:extend()
 
 local Layer = Class:extend()
 function Layer:new(tiles, name)
@@ -152,7 +152,7 @@ local function getLevels(_levels, root, options, tilesets, levelsByUid)
   return levels
 end
 
-function Ldtk:new(path, options)
+function Tilemapper:new(path, options)
   local root = path:gsub("[^/]+.ldtk", "")
   local data = love.filesystem.read(path)
   local raw = json.decode(data)
@@ -183,7 +183,7 @@ function IntGrid:addCollisions(world)
   end
 end
 
-function Ldtk:addCollisions()
+function Tilemapper:addCollisions()
   local layers = self.active
   for _, layer in pairs(layers) do
     local meta = getmetatable(layer)
@@ -201,7 +201,7 @@ function IntGrid:removeCollisions(world)
   end
 end
 
-function Ldtk:removeCollisions()
+function Tilemapper:removeCollisions()
   local layers = self.active
   for _, layer in pairs(layers) do
     local meta = getmetatable(layer)
@@ -219,7 +219,7 @@ function AutoLayer:draw()
   end
 end
 
-function Ldtk:loadLevel(name, world)
+function Tilemapper:loadLevel(name, world)
   if not self.world and world then
     self.world = world
   end
@@ -234,7 +234,7 @@ function Ldtk:loadLevel(name, world)
   self:addCollisions()
 end
 
-function Ldtk:nextLevel(dir)
+function Tilemapper:nextLevel(dir)
   local nextLevel = self.active.next[dir]
   if not nextLevel then
     return false
@@ -242,7 +242,7 @@ function Ldtk:nextLevel(dir)
   self:loadLevel(self.active.next[dir])
 end
 
-function Ldtk:draw()
+function Tilemapper:draw()
   local layers = self.active
   for _, layer in pairs(layers) do
     local meta = getmetatable(layer)
@@ -252,4 +252,4 @@ function Ldtk:draw()
   end
 end
 
-return Ldtk
+return Tilemapper

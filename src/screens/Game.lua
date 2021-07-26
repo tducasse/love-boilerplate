@@ -6,7 +6,7 @@ local GameScreen = {}
 function GameScreen.new()
   local self = Screen.new()
 
-  local Ldtk = require("lib.tilemapper")
+  local Tilemapper = require("lib.tilemapper")
   local Camera = require("lib.camera")
   local bump = require("lib.bump")
   local push = require("lib.push")
@@ -33,7 +33,7 @@ function GameScreen.new()
     music = love.audio.play("assets/music.ogg", "stream", true)
 
     -- MAP
-    map = Ldtk("assets/boilerplate.ldtk", { aseprite = true })
+    map = Tilemapper("assets/boilerplate.ldtk", { aseprite = true })
     world = bump.newWorld()
     map:loadLevel("Level_0", world)
     camera:setBounds(0, 0, map.active.width, map.active.height)
